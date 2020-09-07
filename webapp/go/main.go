@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"html/template"
+	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -12,6 +13,8 @@ import (
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+
+	_ "net/http/pprof"
 )
 
 var db *sql.DB
@@ -184,6 +187,10 @@ func main() {
 
 		c.String(http.StatusOK, "Finish")
 	})
+
+	go func() {
+		log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
+	}()
 
 	r.Run(":8080")
 }
