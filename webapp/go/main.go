@@ -153,29 +153,35 @@ func main() {
 	// POST /vote
 	r.POST("/vote", func(c *gin.Context) {
 		user, userErr := getUser(c.PostForm("name"), c.PostForm("address"), c.PostForm("mynumber"))
-		candidate, cndErr := getCandidateByName(c.PostForm("candidate"))
 		votedCount := getUserVotedCount(user.ID)
-		candidates := getAllCandidate()
 		voteCount, _ := strconv.Atoi(c.PostForm("vote_count"))
 
 		var message string
-		r.SetHTMLTemplate(template.Must(template.ParseFiles(layout, "templates/vote.tmpl")))
 		if userErr != nil {
 			message = "個人情報に誤りがあります"
 		} else if user.Votes < voteCount+votedCount {
 			message = "投票数が上限を超えています"
 		} else if c.PostForm("candidate") == "" {
 			message = "候補者を記入してください"
-		} else if cndErr != nil {
-			message = "候補者を正しく記入してください"
 		} else if c.PostForm("keyword") == "" {
 			message = "投票理由を記入してください"
 		} else {
-			for i := 1; i <= voteCount; i++ {
-				createVote(user.ID, candidate.ID, c.PostForm("keyword"))
+			candidate, cndErr := getCandidateByName(c.PostForm("candidate"))
+			if cndErr != nil {
+				message = "候補者を正しく記入してください"
+			} else {
+				for i := 1; i <= voteCount; i++ {
+					// TODO bulk insert
+					createVote(user.ID, candidate.ID, c.PostForm("keyword"), candidate.PoliticalParty)
+				}
+				message = "投票に成功しました"
 			}
-			message = "投票に成功しました"
 		}
+
+		candidates := getAllCandidate()
+
+		r.SetHTMLTemplate(template.Must(template.ParseFiles(layout, "templates/vote.tmpl")))
+
 		c.HTML(http.StatusOK, "base", gin.H{
 			"candidates": candidates,
 			"message":    message,

@@ -20,9 +20,9 @@ func getUserVotedCount(userID int) (count int) {
 	return
 }
 
-func createVote(userID int, candidateID int, keyword string) {
-	db.Exec("INSERT INTO votes (user_id, candidate_id, keyword) VALUES (?, ?, ?)",
-		userID, candidateID, keyword)
+func createVote(userID int, candidateID int, keyword string, politicalParty string) {
+	db.Exec("INSERT INTO votes (user_id, candidate_id, keyword, political_party) VALUES (?, ?, ?, ?)",
+		userID, candidateID, keyword, politicalParty)
 }
 
 func getVoiceOfSupporter(candidateIDs []int) (voices []string) {
