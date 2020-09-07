@@ -30,7 +30,7 @@ log_reset: ## logファイルを初期化する
 
 .PHONY: alp
 alp: ## alpのログを見る
-	@cat $(NGINX_LOG) | alp ltsv --sort avg --format md -m "" --filters ""
+	@cat $(NGINX_LOG) | alp ltsv --sort avg -r --format md -m "/candidates/\d+, /political_parties/*" --filters ""
 
 .PHONY: slow
 slow: ## スロークエリを見る
@@ -38,7 +38,7 @@ slow: ## スロークエリを見る
 
 .PHONY: slow_on
 slow_on: ## mysqlのslowログをonにする
-	sudo mysql -u$(DB_USER) -p$(DB_PASS) -e "set global slow_query_log_file = '$(MYSQL_SLOW_LOG)'; set global long_query_time = 0; set global slow_query_log = ON;"
+	sudo mysql -u$(DB_USER) -p$(DB_PASS) -e "set global slow_query_log_file = '$(MYSQL_SLOW_LOG)'; set global log_output = 'FILE'; set global long_query_time = 0; set global slow_query_log = ON;"
 
 .PHONY: slow_off
 slow_off: ## mysqlのslowログをoffにする
@@ -58,14 +58,14 @@ mysql: ## mysql接続コマンド
 	mysql -h $(DB_HOST) -u $(DB_USER) -p$(DB_PASS) $(DB_NAME)
 
 .PHONY: bench
-bench: slow_on log_reset application_build application_restart ## bench回す前に実行するコマンド
+bench: slow_on log_reset ## bench回す前に実行するコマンド
 
 pprof:
 	@go tool pprof -png -output pprof.png http://localhost:6060/debug/pprof/profile && discordcat -f pprof.png --filename pprof.png
 
 .PHONY: application_build
 application_build: ## application build
-	cd $(APP_DIR); go build -o isucari
+	cd $(APP_DIR); make build
 
 .PHONY: application_restart
 application_restart:
