@@ -10,9 +10,9 @@ NGINX_CONFIG := /etc/nginx/nginx.conf
 
 DB_HOST := 127.0.0.1
 DB_PORT := 3306
-DB_USER := todo
-DB_PASS := todo
-DB_NAME := todo
+DB_USER := ishocon
+DB_PASS := ishocon
+DB_NAME := ishocon2
 
 EDIT_MYSQL_CONFIG := $(APP_DIR)/my.cnf
 EDIT_NGINX_CONFIG := $(APP_DIR)/nginx.conf
@@ -38,15 +38,15 @@ slow: ## スロークエリを見る
 
 .PHONY: slow_on
 slow_on: ## mysqlのslowログをonにする
-	sudo mysql -e "set global slow_query_log_file = '$(MYSQL_SLOW_LOG)'; set global long_query_time = 0; set global slow_query_log = ON;"
+	sudo mysql -u$(DB_USER) -p$(DB_PASS) -e "set global slow_query_log_file = '$(MYSQL_SLOW_LOG)'; set global long_query_time = 0; set global slow_query_log = ON;"
 
 .PHONY: slow_off
 slow_off: ## mysqlのslowログをoffにする
-	sudo mysql -e "set global slow_query_log = OFF;"
+	sudo mysql -u$(DB_USER) -p$(DB_PASS) -e "set global slow_query_log = OFF;"
 
 .PHONY: show_slow_config
 show_slow_config: ## mysqlのslowログ設定を確認するコマンド
-	@sudo mysql -e "show variables like 'slow_query%'"
+	@sudo mysql -u$(DB_USER) -p$(DB_PASS) -e "show variables like 'slow_query%'"
 
 .PHONY: send_result
 send_result: ## discordにalpとslowの出力を送信する
