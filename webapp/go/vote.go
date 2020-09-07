@@ -39,7 +39,7 @@ func createVote(userID int, candidateID int, keyword string, politicalParty stri
 		valueArgs := []interface{}{}
 		valueStrings := []string{}
 
-		query := "INSERT INTO votes (user_id, candidate_id, keyword, political_party)"
+		query := "INSERT INTO votes (user_id, candidate_id, keyword, political_party) VALUES %s"
 
 		for i := 0; i < count; i++ {
 			valueStrings = append(valueStrings, "(?, ?, ?, ?)")
@@ -52,7 +52,12 @@ func createVote(userID int, candidateID int, keyword string, politicalParty stri
 
 		query = fmt.Sprintf(query, strings.Join(valueStrings, ","))
 
-		db.Exec(query, valueArgs)
+		fmt.Println(query)
+
+		_, err := db.Exec(query, valueArgs...)
+		if err != nil {
+			fmt.Println("err", err)
+		}
 	}
 }
 
