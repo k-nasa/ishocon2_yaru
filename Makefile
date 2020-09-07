@@ -30,7 +30,7 @@ log_reset: ## logファイルを初期化する
 
 .PHONY: alp
 alp: ## alpのログを見る
-	@cat $(NGINX_LOG) | alp ltsv --sort avg -r --format md -m "/candidates/\d+, /political_parties/*" --filters ""
+	@sudo cat $(NGINX_LOG) | alp ltsv --sort avg -r --format md -m "/candidates/\d+, /political_parties/*" --filters ""
 
 .PHONY: slow
 slow: ## スロークエリを見る
@@ -58,7 +58,11 @@ mysql: ## mysql接続コマンド
 	mysql -h $(DB_HOST) -u $(DB_USER) -p$(DB_PASS) $(DB_NAME)
 
 .PHONY: bench
-bench: slow_on log_reset ## bench回す前に実行するコマンド
+bench: log_reset restart slow_on ## bench回す前に実行するコマンド
+
+restart:
+	sudo systemctl restart nginx
+	sudo systemctl restart mysql
 
 pprof:
 	@go tool pprof -png -output pprof.png http://localhost:6060/debug/pprof/profile && discordcat -f pprof.png --filename pprof.png
