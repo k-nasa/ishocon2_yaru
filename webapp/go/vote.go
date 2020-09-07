@@ -14,6 +14,12 @@ func getVoteCountByCandidateID(candidateID int) (count int) {
 	return
 }
 
+func getVoteCountByPartyName(partyName string) (count int) {
+	row := db.QueryRow("SELECT COUNT(*) AS count FROM votes WHERE political_party = ?", partyName)
+	row.Scan(&count)
+	return
+}
+
 func getUserVotedCount(userID int) (count int) {
 	row := db.QueryRow("SELECT COUNT(*) AS count FROM votes WHERE user_id =  ?", userID)
 	row.Scan(&count)
