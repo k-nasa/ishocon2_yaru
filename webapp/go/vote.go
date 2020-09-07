@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"strings"
+)
+
 // Vote Model
 type Vote struct {
 	ID          int
@@ -26,9 +31,34 @@ func getUserVotedCount(userID int) (count int) {
 	return
 }
 
-func createVote(userID int, candidateID int, keyword string, politicalParty string) {
-	db.Exec("INSERT INTO votes (user_id, candidate_id, keyword, political_party) VALUES (?, ?, ?, ?)",
-		userID, candidateID, keyword, politicalParty)
+func createVote(userID int, candidateID int, keyword string, politicalParty string, count int) {
+	if count == 1 {
+		db.Exec("INSERT INTO votes (user_id, candidate_id, keyword, political_party) VALUES (?, ?, ?, ?)",
+			userID, candidateID, keyword, politicalParty)
+	} else {
+		valueArgs := []interface{}{}
+		valueStrings := []string{}
+
+		query := "INSERT INTO votes (user_id, candidate_id, keyword, political_party) VALUES %s"
+
+		for i := 0; i < count; i++ {
+			valueStrings = append(valueStrings, "(?, ?, ?, ?)")
+
+			valueArgs = append(valueArgs, userID)
+			valueArgs = append(valueArgs, candidateID)
+			valueArgs = append(valueArgs, keyword)
+			valueArgs = append(valueArgs, politicalParty)
+		}
+
+		query = fmt.Sprintf(query, strings.Join(valueStrings, ","))
+
+		fmt.Println(query)
+
+		_, err := db.Exec(query, valueArgs...)
+		if err != nil {
+			fmt.Println("err", err)
+		}
+	}
 }
 
 func getVoiceOfSupporter(candidateIDs []int) (voices []string) {
