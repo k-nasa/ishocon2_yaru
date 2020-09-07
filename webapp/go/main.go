@@ -17,7 +17,10 @@ import (
 	_ "net/http/pprof"
 )
 
-var db *sql.DB
+var (
+	db         *sql.DB
+	partyNames []string
+)
 
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
@@ -54,14 +57,16 @@ func main() {
 		candidates := tmp[:10]
 		candidates = append(candidates, tmp[len(tmp)-1])
 
-		partyNames := getAllPartyName()
 		partyResultMap := map[string]int{}
+
 		for _, name := range partyNames {
 			partyResultMap[name] = 0
 		}
+
 		for _, r := range electionResults {
 			partyResultMap[r.PoliticalParty] += r.VoteCount
 		}
+
 		partyResults := []PartyElectionResult{}
 		for name, count := range partyResultMap {
 			r := PartyElectionResult{}
@@ -164,10 +169,7 @@ func main() {
 			if cndErr != nil {
 				message = "候補者を正しく記入してください"
 			} else {
-				for i := 1; i <= voteCount; i++ {
-					// TODO bulk insert
-					createVote(user.ID, candidate.ID, c.PostForm("keyword"), candidate.PoliticalParty)
-				}
+				createVote(user.ID, candidate.ID, c.PostForm("keyword"), candidate.PoliticalParty, voteCount)
 				message = "投票に成功しました"
 			}
 		}
@@ -184,6 +186,8 @@ func main() {
 
 	r.GET("/initialize", func(c *gin.Context) {
 		db.Exec("DELETE FROM votes")
+
+		partyNames = getAllPartyName()
 
 		c.String(http.StatusOK, "Finish")
 	})
